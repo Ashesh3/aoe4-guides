@@ -41,6 +41,7 @@ import {
 import { initializeAppCheck, ReCaptchaV3Provider, getToken } from "firebase/app-check";
 import { getFunctions } from "firebase/functions";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { shouldAutoRefreshAppCheck } from "@/composables/data/liveBuildService.js";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -59,12 +60,16 @@ const db = initializeFirestore(app, {
 const functions = getFunctions(app);
 const storage = getStorage(app);
 
-if(import.meta.env.VITE_DEBUG_TOKEN){
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_DEBUG_TOKEN;
+const debugToken = import.meta.env.VITE_DEBUG_TOKEN;
+if(debugToken){
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken;
 }
 const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_PROVIDER_KEY),
-  isTokenAutoRefreshEnabled: true,
+  isTokenAutoRefreshEnabled: shouldAutoRefreshAppCheck(
+    typeof location === "undefined" ? "" : location.hostname,
+    debugToken
+  ),
 });
 
 export {

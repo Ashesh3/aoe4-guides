@@ -59,6 +59,7 @@
                 @configChanged="configChanged"
                 context="civ-locked"
                 :civName="civDisplayName"
+                :countFn="getLiveDashboardCount"
               ></FilterConfig></span
           ></v-col>
 
@@ -83,6 +84,7 @@
               @configChanged="configChanged"
               context="civ-locked"
               :civName="civDisplayName"
+              :countFn="getLiveDashboardCount"
             ></FilterConfig
           ></v-col>
         </v-row>
@@ -106,7 +108,10 @@ import NoFilterResults from "@/components/notifications/NoFilterResults.vue";
 //Composables
 import { civs as allCivs } from "@/composables/filter/civDefaultProvider";
 import { getDefaultConfig } from "@/composables/filter/configDefaultProvider";
-import { getBuilds, getBuildsCount } from "@/composables/data/buildService";
+import {
+  getLiveDashboard,
+  getLiveDashboardCount,
+} from "@/composables/data/liveBuildService.js";
 
 export default {
   name: "Dashboard",
@@ -188,52 +193,22 @@ export default {
       //reset results count
       store.commit("setResultsCount", null);
 
-      // The count and the three lane queries are independent, so run them in
-      // parallel instead of stacking four sequential round-trips.
-      var configpopularBuildsList = JSON.parse(JSON.stringify(filterConfig.value));
-      configpopularBuildsList.orderBy = "score";
-      var configAllTimeClassicsList = JSON.parse(JSON.stringify(filterConfig.value));
-      configAllTimeClassicsList.orderBy = "scoreAllTime";
-      var configRecentBuildsList = JSON.parse(JSON.stringify(filterConfig.value));
-      configRecentBuildsList.orderBy = "timeCreated";
-
-      const countPromise = getBuildsCount(configpopularBuildsList);
-      const lanes = [
-        { promise: getBuilds(configpopularBuildsList, 10), target: popularBuildsList },
-        { promise: getBuilds(configAllTimeClassicsList, 10), target: allTimeClassicsList },
-        { promise: getBuilds(configRecentBuildsList, 10), target: recentBuildsList },
-      ];
-
-      // The count aggregation is consistently the slowest of the four queries,
-      // so each lane renders as soon as its own query resolves instead of
-      // waiting for the whole batch. An empty lane result stays a skeleton:
-      // only the count decides between "no results for this filter"
-      // (NoFilterResults) and data, avoiding a flash of BuildLaneTabs' own
-      // empty state.
-      for (const { promise, target } of lanes) {
-        promise
-          .then((builds) => {
-            if (runId === initDataRun && builds.length > 0) target.value = builds;
-          })
-          .catch(() => {}); // rejections surface via the await below
-      }
-
-      // Still await the lanes so a mid-flight supersede is detected and any
-      // rejection surfaces; the progressive handlers above already assigned
-      // their results, so only the count value is needed here.
-      const [count] = await Promise.all([
-        countPromise,
-        ...lanes.map((lane) => lane.promise),
-      ]);
+      //The personal viewer cannot mint the production site's domain-restricted
+      //App Check token. Read the same public production data through the API
+      //instead of issuing four Firestore requests that are guaranteed to 403.
+      const dashboard = await getLiveDashboard(filterConfig.value);
 
       // A newer initData run (filter change mid-flight) supersedes this one.
       if (runId !== initDataRun) return;
 
-      // Commit the count: >0 keeps the progressively-assigned lanes on screen;
-      // ===0 leaves the lanes as skeletons and flips the template to
-      // NoFilterResults (gated on count), so there is no empty-state flicker.
-      trendingCount.value = count;
-      store.commit("setResultsCount", count);
+      popularBuildsList.value = dashboard.popular;
+      allTimeClassicsList.value = dashboard.classics;
+      recentBuildsList.value = dashboard.recent;
+      //The public API has no total-count endpoint. Zero is authoritative when
+      //all three result sets are empty; otherwise leave the count unknown rather
+      //than label a capped union as the total number of builds.
+      trendingCount.value = dashboard.hasResults ? null : 0;
+      store.commit("setResultsCount", dashboard.hasResults ? null : 0);
     };
 
     return {
@@ -249,6 +224,7 @@ export default {
       civs,
       civ,
       civDisplayName,
+      getLiveDashboardCount,
     };
   },
 };

@@ -5,6 +5,7 @@ import {
   getLiveBuild,
   liveBuildUrl,
 } from "../src/composables/data/liveBuildService.js";
+import * as liveBuildService from "../src/composables/data/liveBuildService.js";
 
 const LIVE_BUILD = {
   author: "Jockxtar",
@@ -86,4 +87,97 @@ test("getLiveBuild rejects missing and malformed production responses", async ()
 
   assert.equal(missing, undefined);
   assert.equal(malformed, undefined);
+});
+
+test("getLiveDashboard loads and filters all three public dashboard lanes", async () => {
+  assert.equal(typeof liveBuildService.getLiveDashboard, "function");
+
+  const matching = (id, title) => ({
+    ...structuredClone(LIVE_BUILD),
+    id,
+    title,
+    civ: "GOH",
+    creatorId: "creator-1",
+    season: "Season 12",
+    map: "Open",
+    strategy: "Rush",
+  });
+  const rejected = {
+    ...matching("rejected", "Wrong season"),
+    season: "Season 11",
+  };
+  const responses = new Map([
+    [
+      "https://aoe4guides.com/api/builds?civ=GOH&orderBy=score",
+      [matching("trending", "Trending build"), rejected],
+    ],
+    [
+      "https://aoe4guides.com/api/builds?civ=GOH&orderBy=views",
+      [matching("classic", "Classic build"), rejected],
+    ],
+    [
+      "https://aoe4guides.com/api/builds?civ=GOH&orderBy=timeCreated",
+      [matching("recent", "Recent build"), rejected],
+    ],
+  ]);
+  const requested = [];
+  const fetchImpl = async (url) => {
+    requested.push(url);
+    return {
+      ok: responses.has(url),
+      async json() {
+        return structuredClone(responses.get(url));
+      },
+    };
+  };
+  const config = {
+    civs: "GOH",
+    creator: "creator-1",
+    seasons: ["Season 12"],
+    maps: ["Open"],
+    strategies: ["Rush"],
+    drafts: false,
+  };
+
+  const dashboard = await liveBuildService.getLiveDashboard(config, fetchImpl);
+
+  assert.deepEqual(requested, [...responses.keys()]);
+  assert.deepEqual(dashboard.popular.map((build) => build.id), ["trending"]);
+  assert.deepEqual(dashboard.classics.map((build) => build.id), ["classic"]);
+  assert.deepEqual(dashboard.recent.map((build) => build.id), ["recent"]);
+  assert.equal(dashboard.hasResults, true);
+  assert.deepEqual(dashboard.popular[0].timeCreated, {
+    seconds: 1762363866,
+    nanoseconds: 704000000,
+  });
+});
+
+test("getLiveDashboardCount reports only an authoritative empty result", async () => {
+  assert.equal(typeof liveBuildService.getLiveDashboardCount, "function");
+
+  const fetchImpl = async () => ({
+    ok: true,
+    async json() {
+      return [structuredClone(LIVE_BUILD)];
+    },
+  });
+
+  assert.equal(await liveBuildService.getLiveDashboardCount({ civs: "GOH" }, fetchImpl), null);
+  assert.equal(
+    await liveBuildService.getLiveDashboardCount(
+      { civs: "GOH" },
+      async () => ({ ok: true, async json() { return []; } })
+    ),
+    0
+  );
+});
+
+test("automatic App Check refresh runs only on official or debug hosts", () => {
+  assert.equal(typeof liveBuildService.shouldAutoRefreshAppCheck, "function");
+
+  assert.equal(liveBuildService.shouldAutoRefreshAppCheck("aoe4guides.com"), true);
+  assert.equal(liveBuildService.shouldAutoRefreshAppCheck("www.aoe4guides.com"), true);
+  assert.equal(liveBuildService.shouldAutoRefreshAppCheck("aoe4-guides.vercel.app"), false);
+  assert.equal(liveBuildService.shouldAutoRefreshAppCheck("aoeguides.ashesh.dev"), false);
+  assert.equal(liveBuildService.shouldAutoRefreshAppCheck("localhost", "debug-token"), true);
 });

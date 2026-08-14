@@ -1,4 +1,12 @@
 const LIVE_SITE_ORIGIN = "https://aoe4guides.com";
+const LIVE_DASHBOARD_LANES = [
+  ["popular", "score"],
+  //The public API does not expose scoreAllTime. Views is its documented
+  //all-time popularity order, and preserves the lane's meaning without making
+  //a Firestore request that App Check will reject on a personal domain.
+  ["classics", "views"],
+  ["recent", "timeCreated"],
+];
 
 /**
  * The production API URL for one public build.
@@ -35,6 +43,93 @@ function reviveApiTimestamps(value) {
   return Object.fromEntries(
     Object.entries(value).map(([key, item]) => [key, reviveApiTimestamps(item)])
   );
+}
+
+/**
+ * Whether this hostname may proactively mint production App Check tokens.
+ *
+ * The production reCAPTCHA key is domain-restricted. Asking it for a token on
+ * a Vercel or personal hostname can only fail, and automatic refresh makes that
+ * failure happen at startup even on pages that use the public read-only API.
+ * A configured debug token is the explicit local-development exception.
+ *
+ * @param {string} hostname
+ * @param {string|boolean|null} debugToken
+ * @return {boolean}
+ */
+export function shouldAutoRefreshAppCheck(hostname, debugToken = null) {
+  if (debugToken) return true;
+  const host = String(hostname ?? "").toLowerCase();
+  return host === "aoe4guides.com" || host === "www.aoe4guides.com";
+}
+
+function liveBuildsUrl({ civ, author, orderBy } = {}) {
+  const query = new URLSearchParams();
+  if (civ) query.set("civ", civ);
+  if (author) query.set("author", author);
+  if (orderBy) query.set("orderBy", orderBy);
+  const suffix = query.toString();
+  return `${LIVE_SITE_ORIGIN}/api/builds${suffix ? `?${suffix}` : ""}`;
+}
+
+function inSelected(value, selected) {
+  return !Array.isArray(selected) || selected.length === 0 || selected.includes(value ?? "");
+}
+
+function matchesDashboardFilters(build, config) {
+  if (!build || typeof build !== "object") return false;
+  if (config?.civs && build.civ !== config.civs) return false;
+  if (config?.creator && build.creatorId !== config.creator) return false;
+  if (!inSelected(build.season, config?.seasons)) return false;
+  if (!inSelected(build.map, config?.maps)) return false;
+  if (!inSelected(build.strategy, config?.strategies)) return false;
+  return config?.drafts ? build.isDraft === true : build.isDraft !== true;
+}
+
+async function getLiveBuilds(config, orderBy, fetchImpl) {
+  try {
+    const response = await fetchImpl(
+      liveBuildsUrl({ civ: config?.civs, author: config?.author, orderBy })
+    );
+    if (!response?.ok) return [];
+
+    const builds = await response.json();
+    if (!Array.isArray(builds)) return [];
+    return reviveApiTimestamps(builds).filter((build) => matchesDashboardFilters(build, config));
+  } catch (error) {
+    console.error("liveBuildService.getLiveBuilds failed:", error?.message ?? error);
+    return [];
+  }
+}
+
+/**
+ * Loads the three civilization Dashboard lanes from the production read-only
+ * API. One API query per sort is required because the endpoint caps each
+ * ordered result at ten and offers no pagination or count route.
+ *
+ * The API has no count endpoint, so the only authoritative count is zero when
+ * every lane is empty. A populated response reports `hasResults` instead of an
+ * invented total.
+ *
+ * @param {Object} config
+ * @param {Function} fetchImpl
+ * @return {Promise<{popular:Array,classics:Array,recent:Array,hasResults:boolean}>}
+ */
+export async function getLiveDashboard(config = {}, fetchImpl = fetch) {
+  const laneResults = await Promise.all(
+    LIVE_DASHBOARD_LANES.map(async ([name, orderBy]) => [
+      name,
+      await getLiveBuilds(config, orderBy, fetchImpl),
+    ])
+  );
+  const lanes = Object.fromEntries(laneResults);
+  const hasResults = [...lanes.popular, ...lanes.classics, ...lanes.recent].length > 0;
+
+  return { ...lanes, hasResults };
+}
+
+export async function getLiveDashboardCount(config = {}, fetchImpl = fetch) {
+  return (await getLiveDashboard(config, fetchImpl)).hasResults ? null : 0;
 }
 
 /**
