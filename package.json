@@ -1,0 +1,48 @@
+{
+  "name": "aoe4-guides",
+  "version": "1.17.0",
+  "private": true,
+  "packageManager": "npm@10.9.7",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "preinstall": "node scripts/only-npm.mjs",
+    "test": "node --no-warnings --test tests/*.test.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "postbuild": "node scripts/prerender.mjs",
+    "prerender": "node scripts/prerender.mjs --force",
+    "preview": "vite preview",
+    "check:icons": "node scripts/check-icons.mjs",
+    "check:plurals": "node scripts/check-plurals.mjs",
+    "check:steps": "node scripts/check-steps.mjs",
+    "check:setup": "node scripts/check-setup.mjs"
+  },
+  "dependencies": {
+    "@firebase/app-check": "^0.8.13",
+    "@mdi/js": "^7.4.47",
+    "@vueuse/core": "^13.0.0",
+    "axios": "^1.8.4",
+    "easy-speech": "^2.4.0",
+    "firebase": "^10.14.0",
+    "g": "^2.0.1",
+    "jszip": "^3.10.1",
+    "qrcode": "^1.5.4",
+    "sanitize-html": "^2.15.0",
+    "scroll-into-view-if-needed": "^3.1.0",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vue": "^3.2.45",
+    "vue-router": "^4.5.0",
+    "vuetify": "^3.8.0",
+    "vuex": "^4.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.0.0",
+    "firebase-tools": "^15.3.1",
+    "vite": "^6.2.5",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  }
+}

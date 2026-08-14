@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - run: npm ci
+
+      # Covers the production API reader and the classic resource table before
+      # the deploy-oriented build below can publish either one.
+      - run: npm test
+
+      # A green Vue compile can still render a blank component when setup()
+      # returns a name it never defined. Keep the repository's runtime-shaped
+      # safety check in CI rather than relying on the bundle alone.
+      - run: npm run check:setup
+
+      # Build sections also contain notes and nested alternatives. This catches
+      # new code that accidentally reads only the top-level step array.
+      - run: npm run check:steps
+
+      # Fails if any mdi-* icon used in src/ is missing from the tree-shaken
+      # list in src/plugins/mdiIcons.js (would silently not render in prod).
+      - run: npm run check:icons
+
+      # Fails if an entry in src/composables/builds/icons/plurals.js no longer
+      # matches an icon title. The icon JSON is regenerated upstream, so a
+      # rename orphans the exception and it lapses back to the regular rule.
+      - run: npm run check:plurals
+
+      - run: npm run build

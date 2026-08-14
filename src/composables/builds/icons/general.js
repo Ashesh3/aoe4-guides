@@ -1,0 +1,308 @@
+//Composables
+import { civs } from "./civs.js";
+
+export const general = [
+  {
+    title: "Dark Age",
+    age: "1",
+    imgSrc: "/assets/pictures/age/age_1.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "age1",
+  },
+  {
+    title: "Feudal Age",
+    age: "2",
+    imgSrc: "/assets/pictures/age/age_2.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "age2",
+  },
+  {
+    title: "Castle Age",
+    age: "3",
+    imgSrc: "/assets/pictures/age/age_3.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "age3",
+  },
+  {
+    title: "Imperial Age",
+    age: "4",
+    imgSrc: "/assets/pictures/age/age_4.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "age4",
+  },
+  {
+    title: "Golden Age Tier 1",
+    age: "1",
+    imgSrc: "/assets/pictures/age/goldenagetier1.webp",
+    civ: ["ABB", "AYY"],
+    class: "none",
+  },
+  {
+    title: "Golden Age Tier 2",
+    age: "4",
+    imgSrc: "/assets/pictures/age/goldenagetier2.webp",
+    civ: ["ABB", "AYY"],
+    class: "none",
+  },
+  {
+    title: "Golden Age Tier 3",
+    age: "1",
+    imgSrc: "/assets/pictures/age/goldenagetier3.webp",
+    civ: ["ABB", "AYY"],
+    class: "none",
+  },
+  {
+    title: "Golden Age Tier 4",
+    age: "1",
+    imgSrc: "/assets/pictures/age/goldenagetier4.webp",
+    civ: ["AYY"],
+    class: "none",
+  },
+  {
+    title: "Golden Age Tier 5",
+    age: "1",
+    imgSrc: "/assets/pictures/age/goldenagetier5.webp",
+    civ: ["AYY"],
+    class: "none",
+  },
+  {
+    title: "Vizier Point",
+    age: "1",
+    imgSrc: "/assets/pictures/age/vizier_point.webp",
+    civ: ["OTT"],
+    class: "none",
+  },
+  {
+    title: "Abbasid Dynasty",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/abb.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "abb",
+    description:
+      "The Abbasid Dynasty pursues a flourishing Golden Age by concentrating structures around their House of Wisdom, allowing them to unlock significant economic advantages. The House of Wisdom also drives progress through the Ages and grants access to advanced technology. Abbasid camel units are expert at countering enemy cavalry.",
+  },
+  {
+    title: "Ayyubids",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/ayy.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "ayy",
+    description:
+      "At the confluence of continents, where trade and science meet, and where empires clash, the Ayyubids use their pursuit of knowledge to gain the upper hand. The House of Wisdom is the focal point of this combination of urbanization and science, unlocking powerful Golden Age bonuses and advancing through the ages. The Ayyubids focus on versatile units to gain a tactical advantage on the battlefield.",
+  },
+  {
+    title: "Byzantines",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/byz.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "byz",
+    description:
+      "The Byzantines construct sprawling networks of life-giving Aqueducts and Cisterns. Leverage powerful unique abilities and hire Mercenaries with exquisite Olive Oil. Peasants work tirelessly to manufacture Olive Oil for the empire.",
+  },
+  {
+    title: "China",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/chi.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "chi",
+    description:
+      "The Chinese can shift their focus across the ages, deploying many unique units and building rapidly. Enemies must continually adapt if they want to keep up.",
+  },
+  {
+    title: "Delhi Sultanate",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/del.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "del",
+    description:
+      "The Delhi Sultanate stays many steps ahead of their enemies with great networks of scholars. Fully realized, they field the intimidating War Elephant and trample those in their path.",
+  },
+  {
+    title: "English",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/eng.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "eng",
+    description:
+      "Exceptional early infantry provide the English with a powerful punch backed up by reliable Food production from the fields.",
+  },
+  {
+    title: "French",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/fre.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "fre",
+    description:
+      "The French deploy powerful cavalry units and can boost production in fortified positions. Enemies must be prepared to withstand the charges of powerful Royal Knights and other armored units.",
+  },
+  {
+    title: "Holy Roman Empire",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/hre.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "hre",
+    description:
+      "Prelates enhance the economy of the Holy Roman Empire, while powerful infantry units form the core of its military. Enemies must face an opponent able to rapidly recover from attacks and field strong counterattacks.",
+  },
+  {
+    title: "House of Lancaster",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/hol.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "hol",
+    description:
+      "In Age of Empires IV, the House of Lancaster variant civilization boasts a powerful economy derived from their unique building, the Manor. In addition, their versatile army offers many tactical advantages on the battlefield, allowing them to defeat even the most capable of foes.",
+  },
+  {
+    title: "Japanese",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/jap.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "jap",
+    description:
+      "Ruling over the Japanese land, the Daimyo enhances agriculture and employs Samurai to defend their territory. The unique Forge works tirelessly to sharpen their blades to give an edge in battle. Fierce Samurai Bannermen lead their diverse army of infantry and cavalry to victory.",
+  },
+  {
+    title: "Jeanne d'Arc",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/jda.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "jda",
+    description:
+      "A spark of hope for the French people, Jeanne d'Arc takes to the battlefield and inspires courage to her followers. Starting as a humble villager, Jeanne begins the Journey of a Hero in the Dark Age. Experience forges Jeanne into a powerful leader, gaining access to trusted companions and powerful abilities which shape the empire she was destined to create.",
+  },
+  {
+    title: "Jin Dynasty",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/jin.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "jin",
+    description:
+      "The Jin Dynasty emerges as a formidable military power in northern China.",
+  },
+  {
+    title: "Knights Templar",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/kte.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "kte",
+    description:
+      "Constructing powerful Fortresses cements their control over the map, while providing inspiration to military troops and acting as Landmarks to guide Pilgrims in their travels.",
+  },
+  {
+    title: "Malians",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/mal.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "mal",
+    description:
+      "The Malian economy booms with options for gold and food production. Claiming gold deposits for their Pit Mines, they leverage that growth to produce unique infantry units that strike from stealth and hurl javelins at enemies.",
+  },
+  {
+    title: "Mongols",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/mon.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "mon",
+    description:
+      "Masters of mobility and mounted warfare, the Mongols can easily relocate their camps. They gain economic benefits from setting up near Stone Outcroppings and from raiding enemy buildings. Enemies must deal with cavalry attacks from the opening moments of play.",
+  },
+  {
+    title: "Order of the Dragon",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/dra.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "dra",
+    description:
+      "The Order of the Dragon is established by handpicked wealthy elites to crush hostile empires. Investing large amounts of resources into training only a few exceptional warriors, the Order succeeds in raising an elite army unlike any other.",
+  },
+  {
+    title: "Ottomans",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/ott.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "ott",
+    description:
+      "The Ottoman Army can expand to dominate the battlefield, supported by Military Schools that are able to continuously produce units to swell the ranks of their formations. Supporting those formations, the Mehter war drums signal the highly trained troops to take situational advantage.",
+  },
+  {
+    title: "Rus",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/rus.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "rus",
+    description:
+      "The Rus derive great benefit from the countryside. They are able to gather resources more readily from hunting and forestry and can field strong combat units. Enemies face strong early game fortifications and a diverse economy that cannot easily be disrupted.",
+  },
+  {
+    title: "Zhu Xi's Legacy",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/zxl.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "zxl",
+    description:
+      "The teachings of philosopher Zhu Xi reshape the Chinese civilization. With Zhu Xi’s Legacy, the Chinese boast a sophisticated administration with superior Imperial Officials and advanced technologies. The brimming treasury helps to establish powerful dynasties and research a breadth of unique technologies. Recruit Palace Guards, Zhuge Nus, and Grenadiers early on to protect the Empire.",
+  },
+  {
+    title: "Golden Horde",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/goh.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "goh",
+    description:
+      "The Golden Horde is a powerful Mongol state that emerged in the 13th century. With a focus on cavalry warfare and mobility, the Golden Horde can quickly adapt to changing battlefield conditions. Their unique technologies and units allow them to excel in hit-and-run tactics and raiding enemy territories.",
+  },
+  {
+    title: "Macedonian Dynasty",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/mac.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "mac",
+    description: "The Macedonian Dynasty is known for its powerful military and innovative tactics. With a focus on heavy cavalry and phalanx formations, the Macedonians can dominate the battlefield. Their unique technologies and units allow them to excel in both offense and defense.",
+  },
+  {
+    title: "Sengoku Daimyo",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/sen.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "sen",
+    description:
+      "The Sengoku Daimyo were powerful feudal lords in Japan during the Sengoku period. They commanded loyal samurai and sought to expand their territories through warfare and diplomacy. The Sengoku Daimyo excel in both offense and defense, utilizing unique strategies and technologies to outmaneuver their opponents.",
+  },
+  {
+    title: "Tuglhaq Dynasty",
+    age: "1",
+    imgSrc: "/assets/pictures/civilization_flag/tug.webp",
+    civ: civs,
+    class: "none",
+    shorthand: "tug",
+    description:
+      "The Tuglhaq Dynasty is known for its powerful military and innovative tactics. With a focus on heavy cavalry and phalanx formations, the Tuglhaq can dominate the battlefield. Their unique technologies and units allow them to excel in both offense and defense.",
+  },
+];

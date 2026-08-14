@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "aoe4-guides",
+    "dev": "aoe4-guides-dev",
+    "prod": "aoe4-guides"
+  },
+  "targets": {},
+  "etags": {}
+}
