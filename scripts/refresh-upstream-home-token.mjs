@@ -59,7 +59,7 @@ export async function captureOfficialAppCheckToken(puppeteer) {
 
 async function main() {
   if (!process.env.VERCEL_TOKEN) throw new Error("VERCEL_TOKEN is not set");
-  const [{ default: puppeteer }] = await Promise.all([import("puppeteer")]);
+  const [{ default: puppeteer }] = await Promise.all([import("puppeteer-core")]);
   const token = await captureOfficialAppCheckToken(puppeteer);
 
   await run("npx", [

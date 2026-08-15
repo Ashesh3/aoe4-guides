@@ -22,6 +22,7 @@ jobs:
           node-version: 22
 
       - run: npm ci
+      - run: npm install --no-save --ignore-scripts puppeteer-core@24.8.1
 
       - name: Find Chrome
         run: echo "CHROME_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
