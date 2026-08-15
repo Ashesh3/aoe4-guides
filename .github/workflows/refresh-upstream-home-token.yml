@@ -1,0 +1,33 @@
+name: Refresh upstream Home proxy
+
+on:
+  schedule:
+    - cron: "17 */12 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-upstream-home-proxy
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+      - run: npm install --no-save --ignore-scripts puppeteer-core@24.8.1
+
+      - name: Find Chrome
+        run: echo "CHROME_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" >> "$GITHUB_ENV"
+
+      - name: Mint official App Check token and redeploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: node scripts/refresh-upstream-home-token.mjs
