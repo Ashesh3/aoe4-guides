@@ -24,6 +24,7 @@
         <div class="hidden-md-and-up mt-4">
           <News></News>
           <FundingStatus />
+          <TopContributors :contributors="topContributorsList"></TopContributors>
           <YoutubeGuides :video-ids="recentVideos"></YoutubeGuides>
           <RegisterAd v-if="!user && authIsReady"></RegisterAd>
         </div>
@@ -33,6 +34,7 @@
       <v-col cols="12" md="4" class="hidden-sm-and-down">
         <News></News>
         <FundingStatus />
+        <TopContributors :contributors="topContributorsList"></TopContributors>
         <YoutubeGuides :video-ids="recentVideos"></YoutubeGuides>
         <RegisterAd class="mt-4" v-if="!user && authIsReady"></RegisterAd>
       </v-col>
@@ -47,6 +49,7 @@ import { computed, onMounted, ref } from "vue";
 import RegisterAd from "@/components/notifications/RegisterAd.vue";
 import News from "@/components/notifications/News.vue";
 import YoutubeGuides from "@/components/notifications/YoutubeGuides.vue";
+import TopContributors from "@/components/home/TopContributors.vue";
 import CivPicker from "@/components/home/CivPicker.vue";
 import BuildLaneTabs from "@/components/home/BuildLaneTabs.vue";
 import EventBanner from "@/components/home/EventBanner.vue";
@@ -62,6 +65,7 @@ export default {
     RegisterAd,
     News,
     YoutubeGuides,
+    TopContributors,
     CivPicker,
     BuildLaneTabs,
     EventBanner,
@@ -72,6 +76,7 @@ export default {
     const allTimeClassicsList = computed(() => store.state.cache.allTimeClassicsList);
     const popularBuildsList = computed(() => store.state.cache.popularBuildsList);
     const recentBuildsList = computed(() => store.state.cache.recentBuildsList);
+    const topContributorsList = computed(() => store.state.cache.topContributorsList);
     const civs = allCivs.value.filter((element) => element.shortName != "ANY");
     const user = computed(() => store.state.user);
     const recentCivBuilds = ref([]);
@@ -94,6 +99,7 @@ export default {
       store.commit("setPopularBuildsList", snapshot?.popularBuilds ?? []);
       store.commit("setAllTimeClassicsList", snapshot?.allTimeClassics ?? []);
       store.commit("setRecentBuildsList", snapshot?.recentBuilds ?? []);
+      store.commit("setTopContributorsList", snapshot?.topContributors ?? []);
       store.commit("setResultsCount", snapshot?.buildsCount ?? null);
     };
 
@@ -106,6 +112,7 @@ export default {
       recentBuildsList,
       popularBuildsList,
       allTimeClassicsList,
+      topContributorsList,
     };
   },
 };

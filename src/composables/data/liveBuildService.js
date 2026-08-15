@@ -136,6 +136,18 @@ export async function getLiveDashboardCount(config = {}, fetchImpl = fetch) {
   return (await getLiveDashboard(config, fetchImpl)).hasResults ? null : 0;
 }
 
+async function getProxiedUpstreamHome(fetchImpl) {
+  try {
+    const response = await fetchImpl("/api/upstream-home");
+    if (!response?.ok) return null;
+    const home = await response.json();
+    return home && typeof home === "object" ? home : null;
+  } catch (error) {
+    console.error("liveBuildService.getProxiedUpstreamHome failed:", error?.message ?? error);
+    return null;
+  }
+}
+
 function summarizeRecentCivs(builds) {
   const newestByCiv = new Map();
   for (const build of builds) {
@@ -190,7 +202,8 @@ function summarizeVideos(builds, limit = 5) {
  * @return {Promise<Object>}
  */
 export async function getLiveHome(fetchImpl = fetch) {
-  const [dashboard, recentCivResults] = await Promise.all([
+  const [upstreamHome, dashboard, recentCivResults] = await Promise.all([
+    getProxiedUpstreamHome(fetchImpl),
     getLiveDashboard({}, fetchImpl),
     Promise.all(
       LIVE_HOME_RECENT_CIVS.map((civ) => getLiveBuilds({ civs: civ }, "timeCreated", fetchImpl))
@@ -220,13 +233,13 @@ export async function getLiveHome(fetchImpl = fetch) {
     popularBuilds: dashboard.popular,
     allTimeClassics: dashboard.classics,
     recentBuilds,
-    recentCivBuilds: summarizeRecentCivs(recoveredPublicBuilds),
-    recentVideos: summarizeVideos([
-      ...recentBuilds,
-      ...dashboard.popular,
-      ...dashboard.classics,
-    ]),
-    buildsCount: null,
+    recentCivBuilds:
+      upstreamHome?.recentCivBuilds ?? summarizeRecentCivs(recoveredPublicBuilds),
+    recentVideos:
+      upstreamHome?.recentVideos ??
+      summarizeVideos([...recentBuilds, ...dashboard.popular, ...dashboard.classics]),
+    topContributors: upstreamHome?.topContributors ?? [],
+    buildsCount: upstreamHome?.buildsCount ?? null,
   };
 }
 

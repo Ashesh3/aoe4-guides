@@ -185,6 +185,24 @@ test("getLiveHome replaces every Home skeleton from public production data", asy
   });
   const responses = new Map([
     [
+      "/api/upstream-home",
+      {
+        topContributors: [
+          {
+            authorId: "author-1",
+            displayName: "Valdemar",
+            viewCount: 968430,
+            boCount: 138,
+          },
+        ],
+        recentCivBuilds: [
+          { civ: "BYZ", timeCreated: "2026-08-14T16:46:41.200Z" },
+        ],
+        recentVideos: ["upstreamVideo"],
+        buildsCount: 4202,
+      },
+    ],
+    [
       "https://aoe4guides.com/api/builds?orderBy=score",
       [
         {
@@ -235,10 +253,13 @@ test("getLiveHome replaces every Home skeleton from public production data", asy
   assert.deepEqual(home.allTimeClassics.map((item) => item.id), ["classic-1", "classic-2"]);
   assert.deepEqual(home.recentBuilds.map((item) => item.id), ["recent-1", "recent-2", "recent-3"]);
   assert.deepEqual(home.recentCivBuilds, [
-    { civ: "GOH", timeCreated: { seconds: 1762450266, nanoseconds: 0 } },
+    { civ: "BYZ", timeCreated: "2026-08-14T16:46:41.200Z" },
   ]);
-  assert.deepEqual(home.recentVideos, ["recentVideo", "popularVideo"]);
-  assert.equal("topContributors" in home, false);
+  assert.deepEqual(home.recentVideos, ["upstreamVideo"]);
+  assert.deepEqual(home.topContributors, [
+    { authorId: "author-1", displayName: "Valdemar", viewCount: 968430, boCount: 138 },
+  ]);
+  assert.equal(home.buildsCount, 4202);
 });
 
 test("getLiveHome settles to empty lists when the public API is unavailable", async () => {
@@ -254,6 +275,7 @@ test("getLiveHome settles to empty lists when the public API is unavailable", as
     recentBuilds: [],
     recentCivBuilds: [],
     recentVideos: [],
+    topContributors: [],
     buildsCount: null,
   });
 });
