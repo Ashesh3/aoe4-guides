@@ -7,6 +7,10 @@ const LIVE_DASHBOARD_LANES = [
   ["classics", "views"],
   ["recent", "timeCreated"],
 ];
+const LIVE_HOME_RECENT_CIVS = [
+  "ABB", "AYY", "BYZ", "CHI", "DEL", "ENG", "FRE", "GOH", "HRE", "HOL", "JAP", "JIN",
+  "JDA", "KTE", "MAC", "MAL", "MON", "DRA", "OTT", "RUS", "SEN", "TUG", "ZXL",
+];
 
 /**
  * The production API URL for one public build.
@@ -130,6 +134,100 @@ export async function getLiveDashboard(config = {}, fetchImpl = fetch) {
 
 export async function getLiveDashboardCount(config = {}, fetchImpl = fetch) {
   return (await getLiveDashboard(config, fetchImpl)).hasResults ? null : 0;
+}
+
+function summarizeRecentCivs(builds) {
+  const newestByCiv = new Map();
+  for (const build of builds) {
+    if (!build?.civ || newestByCiv.has(build.civ)) continue;
+    newestByCiv.set(build.civ, {
+      civ: build.civ,
+      timeCreated: build.timeCreated ?? null,
+    });
+  }
+  return [...newestByCiv.values()];
+}
+
+function youtubeVideoId(value) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.hostname === "youtu.be") return url.pathname.split("/").filter(Boolean)[0] ?? null;
+    if (url.pathname.startsWith("/embed/")) return url.pathname.split("/")[2] ?? null;
+    if (url.hostname.endsWith("youtube.com")) return url.searchParams.get("v");
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function summarizeVideos(builds, limit = 5) {
+  const ids = [];
+  const seen = new Set();
+  for (const build of builds) {
+    const id = youtubeVideoId(build?.video);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+    if (ids.length === limit) break;
+  }
+  return ids;
+}
+
+/**
+ * Loads every data set that paints Home from the public production API.
+ *
+ * Home cannot use its Firestore snapshot on personal/Vercel hostnames because
+ * production App Check rejects those domains. Returning settled empty arrays
+ * on a network failure is deliberate: the UI must leave its loading state even
+ * when production is temporarily unavailable.
+ *
+ * Contributor totals are a best available summary of the unique builds in the
+ * three public top-ten lanes. The API has no contributors or count endpoint,
+ * so `buildsCount` stays unknown instead of fabricating a total.
+ *
+ * @param {Function} fetchImpl
+ * @return {Promise<Object>}
+ */
+export async function getLiveHome(fetchImpl = fetch) {
+  const [dashboard, recentCivResults] = await Promise.all([
+    getLiveDashboard({}, fetchImpl),
+    Promise.all(
+      LIVE_HOME_RECENT_CIVS.map((civ) => getLiveBuilds({ civs: civ }, "timeCreated", fetchImpl))
+    ),
+  ]);
+  const recoveredPublicBuilds = recentCivResults
+    .flat()
+    .filter((build, index, all) => all.findIndex((item) => item.id === build.id) === index)
+    .sort((left, right) => {
+      const leftSeconds = left.timeCreated?.seconds ?? 0;
+      const rightSeconds = right.timeCreated?.seconds ?? 0;
+      return rightSeconds - leftSeconds;
+    });
+  //The unfiltered API's first ten can contain drafts, so it may yield fewer
+  //than ten public builds. The per-civ queries supply the public builds hidden
+  //just behind that cap; de-duplicate, sort globally, then fill the lane.
+  const recentBuilds = [...dashboard.recent, ...recoveredPublicBuilds]
+    .filter((build, index, all) => all.findIndex((item) => item.id === build.id) === index)
+    .sort((left, right) => {
+      const leftSeconds = left.timeCreated?.seconds ?? 0;
+      const rightSeconds = right.timeCreated?.seconds ?? 0;
+      return rightSeconds - leftSeconds;
+    })
+    .slice(0, 10);
+
+  return {
+    popularBuilds: dashboard.popular,
+    allTimeClassics: dashboard.classics,
+    recentBuilds,
+    recentCivBuilds: summarizeRecentCivs(recoveredPublicBuilds),
+    recentVideos: summarizeVideos([
+      ...recentBuilds,
+      ...dashboard.popular,
+      ...dashboard.classics,
+    ]),
+    buildsCount: null,
+  };
 }
 
 /**

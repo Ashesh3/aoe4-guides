@@ -172,6 +172,92 @@ test("getLiveDashboardCount reports only an authoritative empty result", async (
   );
 });
 
+test("getLiveHome replaces every Home skeleton from public production data", async () => {
+  assert.equal(typeof liveBuildService.getLiveHome, "function");
+
+  const build = (id, authorUid, author, views, timeCreated) => ({
+    ...structuredClone(LIVE_BUILD),
+    id,
+    authorUid,
+    author,
+    views,
+    timeCreated: { _seconds: timeCreated, _nanoseconds: 0 },
+  });
+  const responses = new Map([
+    [
+      "https://aoe4guides.com/api/builds?orderBy=score",
+      [
+        {
+          ...build("popular-1", "author-a", "Alpha", 40, 1762363866),
+          video: "https://youtu.be/popularVideo",
+        },
+        build("popular-draft", "author-x", "Draft", 999, 1762363866),
+      ],
+    ],
+    [
+      "https://aoe4guides.com/api/builds?orderBy=views",
+      [
+        build("classic-1", "author-a", "Alpha", 100, 1762363866),
+        build("classic-2", "author-b", "Beta", 60, 1762277466),
+      ],
+    ],
+    [
+      "https://aoe4guides.com/api/builds?orderBy=timeCreated",
+      [
+        {
+          ...build("recent-1", "author-c", "Gamma", 20, 1762450266),
+          video: "https://www.youtube.com/embed/recentVideo",
+        },
+        {
+          ...build("recent-2", "author-a", "Alpha", 10, 1762363866),
+          video: "https://www.youtube.com/watch?v=popularVideo",
+        },
+      ],
+    ],
+  ]);
+  responses.set(
+    "https://aoe4guides.com/api/builds?civ=GOH&orderBy=timeCreated",
+    [
+      ...responses.get("https://aoe4guides.com/api/builds?orderBy=timeCreated"),
+      build("recent-3", "author-d", "Delta", 8, 1762277466),
+    ]
+  );
+  responses.get("https://aoe4guides.com/api/builds?orderBy=score")[1].isDraft = true;
+
+  const home = await liveBuildService.getLiveHome(async (url) => ({
+    ok: responses.has(url),
+    async json() {
+      return structuredClone(responses.get(url));
+    },
+  }));
+
+  assert.deepEqual(home.popularBuilds.map((item) => item.id), ["popular-1"]);
+  assert.deepEqual(home.allTimeClassics.map((item) => item.id), ["classic-1", "classic-2"]);
+  assert.deepEqual(home.recentBuilds.map((item) => item.id), ["recent-1", "recent-2", "recent-3"]);
+  assert.deepEqual(home.recentCivBuilds, [
+    { civ: "GOH", timeCreated: { seconds: 1762450266, nanoseconds: 0 } },
+  ]);
+  assert.deepEqual(home.recentVideos, ["recentVideo", "popularVideo"]);
+  assert.equal("topContributors" in home, false);
+});
+
+test("getLiveHome settles to empty lists when the public API is unavailable", async () => {
+  assert.equal(typeof liveBuildService.getLiveHome, "function");
+
+  const home = await liveBuildService.getLiveHome(async () => {
+    throw new Error("offline");
+  });
+
+  assert.deepEqual(home, {
+    popularBuilds: [],
+    allTimeClassics: [],
+    recentBuilds: [],
+    recentCivBuilds: [],
+    recentVideos: [],
+    buildsCount: null,
+  });
+});
+
 test("automatic App Check refresh runs only on official or debug hosts", () => {
   assert.equal(typeof liveBuildService.shouldAutoRefreshAppCheck, "function");
 

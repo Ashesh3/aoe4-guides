@@ -6,7 +6,7 @@
     </v-card-title>
     <v-card-text class="pa-4 pt-0">
       <v-carousel
-        v-if="videosIds"
+        v-if="videoIds.length"
         v-model="currentIndex"
         color="accent"
         show-arrows="hover"
@@ -16,14 +16,14 @@
         @mouseenter="onPointerEnter"
         @mouseleave="isHovered = false"
       >
-        <v-carousel-item v-for="(videoId, index) in videosIds" :key="videoId">
+        <v-carousel-item v-for="(videoId, index) in videoIds" :key="videoId">
           <div style="border-radius: 8px; overflow: hidden; height: 190px">
             <iframe
               :ref="(el) => registerPlayer(videoId, el)"
               width="100%"
               height="190px"
               :src="buildEmbedSrc(videoId)"
-              :title="`Video guide ${index + 1} of ${videosIds.length}`"
+              :title="`Video guide ${index + 1} of ${videoIds.length}`"
               frameborder="0"
               allow="accelerometer; encrypted-media; picture-in-picture; web-share"
               allowfullscreen
@@ -36,14 +36,16 @@
 </template>
 
 <script>
-import { getRecentYoutubeVideos } from "@/composables/data/homeService";
 import { buildEmbedSrc, useYoutubePlayers } from "@/composables/useYoutubePlayers";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 
 export default {
   name: "YoutubeGuides",
-  setup() {
-    const videosIds = ref(null);
+  props: {
+    videoIds: { type: Array, default: () => [] },
+  },
+  setup(props) {
+    const videoIds = computed(() => props.videoIds);
     const currentIndex = ref(0);
     const isHovered = ref(false);
     const { registerPlayer, pause, isPlaying } = useYoutubePlayers();
@@ -72,16 +74,12 @@ export default {
 
     // Whatever slid away stops playing, so audio never trails the visible video.
     watch(currentIndex, (_, previousIndex) => {
-      const previousId = videosIds.value?.[previousIndex];
+      const previousId = props.videoIds[previousIndex];
       if (previousId) pause(previousId);
     });
 
-    onMounted(async () => {
-      videosIds.value = await getRecentYoutubeVideos();
-    });
-
     return {
-      videosIds,
+      videoIds,
       currentIndex,
       isHovered,
       isCycling,
